@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import {useMateriasP} from '../../hooks'
+
 import './solicitudesM.css';
 
 const availableSubjects = [
@@ -9,8 +11,19 @@ const availableSubjects = [
   { id: 5, name: 'Historia', code: 'HIS101' }
 ];
 
+/*const {materiasD} = useMateriasP()*/
+
 const SolicitudesMComponent = () => {
   const [requestedSubjects, setRequestedSubjects] = useState([]);
+
+
+
+ /* useEffect(()=>{
+    console.log(materiasD)
+  },[materiasD]);*/
+
+
+
 
   const addSubject = (subject) => {
     setRequestedSubjects([...requestedSubjects, subject]);

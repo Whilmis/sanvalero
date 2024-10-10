@@ -28,7 +28,7 @@ import { HomePage } from '../uni/pages/HomePege';
 
 export const AppRouter = () => {
 
-    const { status, checkAuthToken, user } = useAuthStore();
+    const { status,checkAuthToken,  user } = useAuthStore();
     // const authStatus = 'not-authenticated'; // 'authenticated'; // 'not-authenticated';
      
     

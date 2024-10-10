@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import {useMaterias,  useMateriasP} from '../../hooks'
 
 const initialTeacherRequests = [
   { id: 1, teacherName: 'Juan Pérez', subject: 'Matemáticas', status: 'Pendiente' },
@@ -13,7 +14,25 @@ const initialStudentRequests = [
 ];
 
 const SolicitudAComponent = () => {
-  const [teacherRequests, setTeacherRequests] = useState(initialTeacherRequests);
+const {materiasState, gerMaterias, paginacionMaterias} = useMaterias();
+const { startgetMateriasP, materiasPE, materiasPM,startUpdateMateriaP, startAprobarMateriaP, starRechazarMateriaP } = useMateriasP()
+const [desde, setDesde] = useState(0);
+
+  useEffect(()=>{
+    gerMaterias()
+    startgetMateriasP()
+
+  },[])
+
+  useEffect(()=>{
+    paginacionMaterias(desde)
+
+  },[desde])
+
+
+  
+
+
   const [studentRequests, setStudentRequests] = useState(initialStudentRequests);
 
   const approveTeacherRequest = (id) => {
@@ -36,9 +55,72 @@ const SolicitudAComponent = () => {
     ));
   };
 
+  const handelMateriaP = async (materiaP ) => {
+   await startUpdateMateriaP(materiaP )
+    paginacionMaterias(desde)
+  }
+
+
+  const siguientep = () =>{
+    setDesde(desde + 5)
+
+  }
+
+  const anteriorP = () =>{
+    if(desde >= 0){
+      setDesde(desde - 5)
+  
+    }
+
+  }
+
   return (
     <div>
-      <h1>Solicitudes de Materias</h1>
+        <h1>Solicitudes de Materias</h1>
+
+<h2>Materias disponibles para solicitar</h2>
+<table>
+  <thead>
+    <tr>
+
+      <th>Materia Solicitada</th>
+      <th>Clave</th>
+      <th>Estado</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    {materiasState?.map(request => (
+      <tr key={request._id}>
+
+        <td>{request?.nombre}</td>
+        <td>{request?.clave}</td>
+        <td>{request?.tipo == "NO_TOMADA"? 'Cerrada' : 'Abierta' }</td>
+        <td>
+          {request.tipo === "NO_TOMADA"? (
+            <>
+            <button onClick={() =>handelMateriaP(request)}>Abrir</button>
+            </>
+          ):
+          (
+            <>
+
+            <button onClick={() => handelMateriaP(request)}>Cancelar</button>
+            </>
+          )}
+        </td>
+      </tr>
+    ))}
+      <tr>  <td></td>
+              <td></td>
+              <td></td>
+              <td>  <>
+                  <button onClick={() => anteriorP()}><p>{'<-'}</p></button>
+                  <button onClick={() => siguientep()}><p>{'->'}</p></button>
+                  </></td></tr>
+  </tbody>
+</table>
+ 
 
       <h2>Solicitudes de Maestros</h2>
       <table>
@@ -46,26 +128,35 @@ const SolicitudAComponent = () => {
           <tr>
             <th>Nombre del Maestro</th>
             <th>Materia Solicitada</th>
+            <th>Clave</th>
             <th>Estado</th>
             <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
-          {teacherRequests.map(request => (
-            <tr key={request.id}>
-              <td>{request.teacherName}</td>
-              <td>{request.subject}</td>
-              <td>{request.status}</td>
-              <td>
-                {request.status === 'Pendiente' && (
-                  <>
-                  <button onClick={() => approveTeacherRequest(request.id)}>Aprobar</button>
-                  <button onClick={() => approveTeacherRequest(request.id)}>Cancelar</button>
-                  </>
-                )}
-              </td>
-            </tr>
+          {materiasPM.map(request => (
+         <tr key={request._id}>
+         <td>{request?.usuario.nombre}</td>
+         <td>{request.nombre}</td>
+         <td>{request.clave}</td>
+         <td>{request.tipo}</td>
+ 
+         <td>
+       
+           {request.tipo === 'ABIERTA' || request.tipo === 'RECHAZADA'?  (
+               <>
+                
+               <button onClick={() => startAprobarMateriaP(request)}>Aprobar</button>
+               
+               </>
+           ):
+           (<>
+           <button onClick={() => starRechazarMateriaP(request)}>Rechazar</button>
+           </>)}
+         </td>
+       </tr>
           ))}
+        
         </tbody>
       </table>
 
@@ -75,32 +166,32 @@ const SolicitudAComponent = () => {
           <tr>
             <th>Nombre del Estudiante</th>
             <th>Materia Solicitada</th>
+            <th>Clave</th>
             <th>Estado</th>
-            <th>Estado del Pago</th>
+
             <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
-          {studentRequests.map(request => (
-            <tr key={request.id}>
-              <td>{request.studentName}</td>
-              <td>{request.subject}</td>
-              <td>{request.status}</td>
-              <td>{request.paymentStatus}</td>
+          {materiasPE?.map(request => (
+            <tr key={request._id}>
+              <td>{request?.usuario.nombre}</td>
+              <td>{request.nombre}</td>
+              <td>{request.clave}</td>
+              <td>{request.tipo}</td>
+      
               <td>
-                {request.paymentStatus === 'Pendiente' && (
-                  <>
-                  <button onClick={() => markPaymentAsCompleted(request.id)}> Pago Realizado</button>
-                  <button onClick={() => approveTeacherRequest(request.id)}>Cancelar</button>
-                  </>
-                )}
-                {request.status === 'Pendiente' && request.paymentStatus === 'Completado' && (
-                    <>
-                    <button onClick={() => approveTeacherRequest(request.id)}>Aprobar</button>
-                    <button onClick={() => approveTeacherRequest(request.id)}>Cancelar</button>
-                    </>
-                )}
-              </td>
+       
+       {request.tipo === 'ABIERTA' || request.tipo === 'RECHAZADA'?  (
+           <>
+           <button onClick={() => startAprobarMateriaP(request)}>Aprobar</button>
+           
+           </>
+       ):
+       (<>
+       <button onClick={() => starRechazarMateriaP(request)}>Rechazar</button>
+       </>)}
+     </td>
             </tr>
           ))}
         </tbody>

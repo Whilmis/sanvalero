@@ -1,12 +1,14 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { calendarApi } from '../api';
 import { clearErrorMessage, onChecking, onLogin, onLogout } from '../store';
+import{useUserStore} from './index'
 
 
 export const useAuthStore = () => {
 
     const { status, user, errorMessage } = useSelector( state => state.auth );
     const dispatch = useDispatch();
+    const{startUserActive} =  useUserStore()
 
     const startLogin = async({ email, password }) => {
        
@@ -16,26 +18,52 @@ export const useAuthStore = () => {
             localStorage.setItem('token', token );
             localStorage.setItem('token-init-date', new Date().getTime() );
             dispatch( onLogin({ nombre: usuario.nombre, rol: usuario.rol ,uid: usuario.uid }) );
+
+
+            if(usuario.rol == 'TEACHER_ROLE'){
+                const { data } = await calendarApi.get(`/maestros/user/${usuario.uid}`);
+
+                startUserActive( data )
+
+
+            }
+
+
+    
+            
+
+           
+    
             
         } catch (error) {
             dispatch( onLogout('Credenciales incorrectas') );
-            console.log('cath')
             setTimeout(() => {
                 dispatch( clearErrorMessage() );
             }, 10);
         }
     }
 
-    const startRegister = async({ correo, password, nombre, rol }) => {
+    const startRegister = async({ correo, password, nombre, rol, carrera }) => {
         dispatch( onChecking() );
         try {
-            console.log({ correo, password, nombre, rol })
+         
             const { data } = await calendarApi.post('/usuarios',{ correo, password, nombre, rol });
            
-            const {usuario, token} = data 
-            localStorage.setItem('token', token );
-            localStorage.setItem('token-init-date', new Date().getTime() );
+            const {usuario} = data 
+
             dispatch( onLogin({ nombre: usuario.name, uid: usuario.uid }) );
+
+            if(rol == "STUDENT_ROLE") {
+                const { dataE } = await calendarApi.post('/estudiantes',{   nombre,  carrera,user_id:usuario.uid })
+                console.log(dataE )
+            } else if(rol == "TEACHER_ROLE"){
+                const { dataE } = await calendarApi.post('/maestros',{   nombre,  carrera, user_id:usuario.uid  })
+                console.log(dataE )
+            } 
+
+            
+
+          
             
         } catch (error) {
             dispatch( onLogout( error.response.data?.msg || '--' ) );
@@ -56,6 +84,7 @@ export const useAuthStore = () => {
             localStorage.setItem('token', data.token );
             localStorage.setItem('token-init-date', new Date().getTime() );
             dispatch( onLogin({ name: data.name, uid: data.uid }) );
+       
         } catch (error) {
             localStorage.clear();
             dispatch( onLogout() );

@@ -9,13 +9,15 @@ const registerFormFields = {
     registerEmail:     '',
     registerPassword:  '',
     registerPassword2: '',
-    registerRole: 'STUDENT_ROLE'
+    registerRole: 'STUDENT_ROLE',
+    carreSelect: 'SISTEMAS'
 }
 
 
 export const ResgisterPage = () => {
     const {  errorMessage, startRegister } = useAuthStore();
-    const { registerEmail, registerName, registerPassword, registerPassword2, onInputChange:onRegisterInputChange, registerRole } = useForm( registerFormFields );
+    const { registerEmail, registerName, registerPassword, registerPassword2, onInputChange:onRegisterInputChange, registerRole, carreSelect } = useForm( registerFormFields );
+      
 
     const registerSubmit = ( event ) => {
         event.preventDefault();
@@ -24,7 +26,7 @@ export const ResgisterPage = () => {
             return;
         }
         
-        startRegister({ nombre: registerName, correo: registerEmail, password: registerPassword, rol: registerRole });
+        startRegister({ nombre: registerName, correo: registerEmail, password: registerPassword, rol: registerRole, carrera: [carreSelect]});
     }
 
     useEffect(() => {
@@ -99,6 +101,28 @@ onChange={onRegisterInputChange}
 </select>
 </label>
 </div>
+{
+    registerRole !== "ADMIN_ROLE" ? 
+    (<div className="select-role">
+        <label>
+Carrera:
+<select
+className='login-form-1'
+value={carreSelect}
+name="carreSelect"
+onChange={onRegisterInputChange}
+>
+<option value="CONTABILIDAD">CONTABILIDAD</option>
+<option value="SISTEMAS">SISTEMAS</option>
+<option value="ENFERMERIA">ENFERMERIA</option>
+<option value="MANTENIMIENTO INDUSTRIAL">MANTENIMIENTO INDUSTRIAL</option>
+<option value="REFIGERACION INDUSTRIAL">REFIGERACION INDUSTRIAL</option>
+<option value="GASTRONOMIA">GASTRONOMIA</option>
+</select>
+</label>
+</div>):  ""
+}
+
             <div className="d-grid gap-2">
                 <input 
                     type="submit" 

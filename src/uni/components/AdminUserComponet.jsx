@@ -1,17 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useUserStore} from '../../hooks'
 
-const initialUsers = [
-  { id: 1, name: 'Carlos López', email: 'carlos.lopez@example.com', role: 'Estudiante', password: 'password123' },
-  { id: 2, name: 'Laura Torres', email: 'laura.torres@example.com', role: 'Maestro', password: 'password123' },
-  { id: 3, name: 'José Rodríguez', email: 'jose.rodriguez@example.com', role: 'Administrador', password: 'password123' }
-];
+
 
 const AdminUserComponent = () => {
-  const [users, setUsers] = useState(initialUsers);
+ const {startgetUsers, users, startUpdateUser, startDeleteUser} = useUserStore();
+
+ useEffect(() => {
+  startgetUsers() ;
+}, [])
+ 
+
+
+
   const [editingUser, setEditingUser] = useState(null);
 
   const startEditing = (user) => {
-    setEditingUser({ ...user });
+   
+    setEditingUser({ ...user,password: "" });
   };
 
   const cancelEditing = () => {
@@ -19,11 +25,17 @@ const AdminUserComponent = () => {
   };
 
   const updateUser = () => {
-    setUsers(users.map(user => 
-      user.id === editingUser.id ? editingUser : user
-    ));
+    startUpdateUser(editingUser);
     setEditingUser(null);
   };
+
+  const deleteUser =(e) =>{
+const {uid} = e ;
+console.log(uid)
+startDeleteUser(uid);
+
+   
+  }
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -47,12 +59,13 @@ const AdminUserComponent = () => {
         </thead>
         <tbody>
           {users.map(user => (
-            <tr key={user.id}>
-              <td>{user.name}</td>
-              <td>{user.email}</td>
-              <td>{user.role}</td>
+            <tr key={user.uid}>
+              <td>{user.nombre}</td>
+              <td>{user.correo}</td>
+              <td>{user.rol}</td>
               <td>
                 <button onClick={() => startEditing(user)}>Editar</button>
+                <button onClick={() => deleteUser(user)}>Eliminar</button>
               </td>
             </tr>
           ))}
@@ -66,8 +79,8 @@ const AdminUserComponent = () => {
             Nombre:
             <input
               type="text"
-              name="name"
-              value={editingUser.name}
+              name="nombre"
+              value={editingUser.nombre}
               onChange={handleChange}
             />
           </label>
@@ -75,8 +88,8 @@ const AdminUserComponent = () => {
             Correo Electrónico:
             <input
               type="email"
-              name="email"
-              value={editingUser.email}
+              name="correo"
+              value={editingUser.correo}
               onChange={handleChange}
             />
           </label>
@@ -92,13 +105,13 @@ const AdminUserComponent = () => {
           <label>
             Rol:
             <select
-              name="role"
-              value={editingUser.role}
+              name="rol"
+              value={editingUser.rol}
               onChange={handleChange}
             >
-              <option value="Estudiante">Estudiante</option>
-              <option value="Maestro">Maestro</option>
-              <option value="Administrador">Administrador</option>
+              <option value="STUDENT_ROLE">Estudiante</option>
+              <option value="TEACHER_ROLE">Maestro</option>
+              <option value="ADMIN_ROLE">Administrador</option>
             </select>
           </label>
           <div className="buttons">
